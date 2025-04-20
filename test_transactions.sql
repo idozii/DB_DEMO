@@ -1,3 +1,4 @@
+-- Active: 1745157292002@@127.0.0.1@3306
 USE transaction_demo;
 
 -- 1. Test money transfer procedure
@@ -67,35 +68,3 @@ FROM products WHERE product_id = 5;
 
 -- 3. Test transaction logs
 SELECT * FROM transaction_log ORDER BY log_id DESC LIMIT 10;
-
--- 4. Test lock demo
--- To demonstrate locking, you would run this in one session:
--- START TRANSACTION;
--- SELECT * FROM lock_demo WHERE id = 1 FOR UPDATE;
--- -- Wait 10 seconds to simulate processing
--- UPDATE lock_demo SET value = 'Updated in Session 1', last_updated = CURRENT_TIMESTAMP WHERE id = 1;
--- COMMIT;
-
--- And this in another session while the first transaction is running:
--- START TRANSACTION;
--- SELECT * FROM lock_demo WHERE id = 1 FOR UPDATE;
--- UPDATE lock_demo SET value = 'Updated in Session 2', last_updated = CURRENT_TIMESTAMP WHERE id = 1;
--- COMMIT;
-
--- For recoverability (successful case)
-CALL demo_recovery(FALSE);
-SELECT * FROM transaction_log WHERE transaction_type = 'RECOVERY';
-
--- For recoverability (failure case)
-CALL demo_recovery(TRUE);
-SELECT * FROM transaction_log WHERE transaction_type = 'RECOVERY';
-
--- For consistency
-CALL demo_consistency();
-SELECT * FROM transaction_log WHERE transaction_type = 'CONSISTENCY';
-
--- For isolation levels (set up for dirty read test)
-CALL test_dirty_read();
--- Then in another session:
-SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
-SELECT * FROM isolation_demo;
