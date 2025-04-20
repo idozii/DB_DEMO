@@ -1,5 +1,3 @@
--- Active: 1745133664809@@127.0.0.1@3306@transaction_demo
-
 USE transaction_demo;
 
 -- 1. Test money transfer procedure
@@ -83,3 +81,21 @@ SELECT * FROM transaction_log ORDER BY log_id DESC LIMIT 10;
 -- SELECT * FROM lock_demo WHERE id = 1 FOR UPDATE;
 -- UPDATE lock_demo SET value = 'Updated in Session 2', last_updated = CURRENT_TIMESTAMP WHERE id = 1;
 -- COMMIT;
+
+-- For recoverability (successful case)
+CALL demo_recovery(FALSE);
+SELECT * FROM transaction_log WHERE transaction_type = 'RECOVERY';
+
+-- For recoverability (failure case)
+CALL demo_recovery(TRUE);
+SELECT * FROM transaction_log WHERE transaction_type = 'RECOVERY';
+
+-- For consistency
+CALL demo_consistency();
+SELECT * FROM transaction_log WHERE transaction_type = 'CONSISTENCY';
+
+-- For isolation levels (set up for dirty read test)
+CALL test_dirty_read();
+-- Then in another session:
+SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+SELECT * FROM isolation_demo;

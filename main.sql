@@ -1,4 +1,3 @@
--- Active: 1745133664809@@127.0.0.1@3306
 DROP DATABASE IF EXISTS transaction_demo;
 CREATE DATABASE transaction_demo;
 USE transaction_demo;
@@ -211,3 +210,141 @@ CREATE TABLE lock_demo (
 );
 
 INSERT INTO lock_demo VALUES (1, 'Initial Value', CURRENT_TIMESTAMP);
+INSERT INTO lock_demo VALUES (2, 'Another Value', CURRENT_TIMESTAMP);
+
+-- Basic Isolation Level Demonstration
+-- =============================================
+CREATE TABLE isolation_demo (
+    id INT PRIMARY KEY,
+    value VARCHAR(100),
+    counter INT DEFAULT 0
+);
+
+INSERT INTO isolation_demo VALUES (1, 'Initial value', 0);
+
+-- Procedure to demonstrate Read Phenomena
+DELIMITER //
+CREATE PROCEDURE demo_isolation_levels()
+BEGIN
+    -- Document initial state
+    INSERT INTO transaction_log (transaction_type, entity_id, old_value, new_value)
+    VALUES ('ISOLATION_DEMO', 'START', 'Isolation demo started', CURRENT_TIMESTAMP);
+    
+    -- To run this demo:
+    -- 1. Start Transaction 1:
+    --    SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+    --    START TRANSACTION;
+    --    SELECT * FROM isolation_demo WHERE id = 1;
+    
+    -- 2. In another session, run:
+    --    START TRANSACTION;
+    --    UPDATE isolation_demo SET value = 'Changed value', counter = counter + 1 WHERE id = 1;
+    --    -- Do not commit yet
+    
+    -- 3. Back in Transaction 1:
+    --    SELECT * FROM isolation_demo WHERE id = 1;
+    --    -- Will see "Changed value" (dirty read) with READ UNCOMMITTED
+    --    -- Will not see it with READ COMMITTED or higher
+    
+    -- 4. In the second session:
+    --    COMMIT;
+    
+    -- 5. In Transaction 1:
+    --    SELECT * FROM isolation_demo WHERE id = 1;
+    --    -- Will see "Changed value" with READ UNCOMMITTED or READ COMMITTED
+    --    -- Will not see it with REPEATABLE READ (shows non-repeatable read issue)
+    --    COMMIT;
+    
+    -- Log completion
+    INSERT INTO transaction_log (transaction_type, entity_id, old_value, new_value)
+    VALUES ('ISOLATION_DEMO', 'END', 'Isolation demo completed', CURRENT_TIMESTAMP);
+END //
+DELIMITER ;
+
+-- =============================================
+-- Basic Recoverability Demonstration
+-- =============================================
+
+-- Procedure to demonstrate transaction recovery
+DELIMITER //
+CREATE PROCEDURE demo_recovery(IN should_fail BOOLEAN)
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        INSERT INTO transaction_log (transaction_type, entity_id, old_value, new_value)
+        VALUES ('RECOVERY', 'ERROR', 'Transaction failed and rolled back', CURRENT_TIMESTAMP);
+    END;
+    
+    START TRANSACTION;
+    
+    -- Update account balance
+    UPDATE accounts SET balance = balance + 100 WHERE account_id = 'A1001';
+    
+    -- Update product stock
+    UPDATE products SET stock_quantity = stock_quantity - 1 WHERE product_id = 1;
+    
+    -- Simulate failure if requested
+    IF should_fail THEN
+        -- Force an error
+        INSERT INTO accounts(account_id) VALUES ('A1001'); -- Duplicate key error
+    END IF;
+    
+    -- Log the transaction
+    INSERT INTO transaction_log (transaction_type, entity_id, old_value, new_value)
+    VALUES ('RECOVERY', 'SUCCESS', 'Transaction completed successfully', CURRENT_TIMESTAMP);
+    
+    COMMIT;
+END //
+DELIMITER ;
+
+-- =============================================
+-- Consistent Read Demonstration (ACID)
+-- =============================================
+
+-- Procedure to demonstrate consistency
+DELIMITER //
+CREATE PROCEDURE demo_consistency()
+BEGIN
+    DECLARE current_total DECIMAL(10,2);
+    DECLARE new_total DECIMAL(10,2);
+    
+    -- Log the total balance before
+    SELECT SUM(balance) INTO current_total FROM accounts;
+    
+    INSERT INTO transaction_log (transaction_type, entity_id, old_value, new_value)
+    VALUES ('CONSISTENCY', 'BEFORE', current_total, CURRENT_TIMESTAMP);
+    
+    -- Execute a transfer
+    CALL transfer_money('A1001', 'A1002', 500.00, @success);
+    
+    -- Check total balance after - should be the same!
+    SELECT SUM(balance) INTO new_total FROM accounts;
+    
+    INSERT INTO transaction_log (transaction_type, entity_id, old_value, new_value)
+    VALUES ('CONSISTENCY', 'AFTER', new_total, CURRENT_TIMESTAMP);
+    
+    -- Verify consistency (total before = total after)
+    IF current_total = new_total THEN
+        INSERT INTO transaction_log (transaction_type, entity_id, old_value, new_value)
+        VALUES ('CONSISTENCY', 'RESULT', 'Database remained consistent', 'PASS');
+    ELSE
+        INSERT INTO transaction_log (transaction_type, entity_id, old_value, new_value)
+        VALUES ('CONSISTENCY', 'RESULT', 'Database consistency violated', 'FAIL');
+    END IF;
+END //
+DELIMITER ;
+
+-- Create test procedures for isolation levels
+DELIMITER //
+CREATE PROCEDURE test_dirty_read()
+BEGIN
+    -- Update without committing
+    START TRANSACTION;
+    UPDATE isolation_demo SET value = 'Dirty value - not committed yet', counter = counter + 1;
+    
+    -- Output message about test
+    SELECT 'Now query the isolation_demo table from another session with READ UNCOMMITTED to see the dirty read' AS message;
+    SELECT 'Then run ROLLBACK in this session to revert the change' AS next_step;
+END //
+DELIMITER ;
