@@ -75,5 +75,24 @@ EXIT;
      - Password: (your password)
    - Click Connect
 
-### Running the SQL Scripts
+### 5. Running the SQL Scripts
 
+1. **Initialize the Database:**
+   - Open `main.sql` in VS Code
+   - With the Database Client extension connected, click the "Run Current File" button or use the keyboard shortcut (usually F9)
+   - This will create the database, tables, and stored procedures
+
+2. **Run the Test Transactions:**
+   - Open `test_transactions.sql` in VS Code
+   - Click "Run Current File" again
+   - You should see the results of each transaction test in the results panel
+
+3. **Alternative Method:**
+   - Right-click on the SQL file in the Explorer panel
+   - Select "Run SQL File" or "Execute Current File"
+   - The extension will execute the entire file
+
+4. **Using Command Palette:**
+   - Press F1 or Ctrl+Shift+P
+   - Type "execute" or "run sql"
+   - Select the option to execute the current file
