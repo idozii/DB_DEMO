@@ -18,6 +18,7 @@ WHERE account_id IN ('A1001', 'A1002');
 -- Execute transfer (fail case - insufficient funds)
 SELECT account_id, account_name, balance FROM accounts 
 WHERE account_id IN ('A1003', 'A1004');
+
 SET @success = FALSE;
 CALL transfer_money('A1003', 'A1004', 1000.00, @success);
 SELECT @success AS 'Transfer Successful';
