@@ -56,21 +56,24 @@ EXIT;
 
 ### 4. Setting up VS Code with Database Client Extension
 
-Install the "Database Client" extension:
+1. Install VS Code if you haven't already: [Visual Studio Code](https://code.visualstudio.com/)
 
-Open VS Code
-Go to Extensions (Ctrl+Shift+X or Cmd+Shift+X)
-Search for "Database Client" by Weijan Chen
-Click Install
-Configure Database Connection:
+2. Install the "Database Client" extension:
+   - Go to Extensions (Ctrl+Shift+X or Cmd+Shift+X)
+   - Search for "Database Client" by Weijan Chen
+   - Click Install
 
-Click on the Database icon in the activity bar
-Click the "+" button to add a new connection
-Select MySQL
-Enter your connection details:
-Name: Transaction Demo
-Host: 127.0.0.1
-Port: 3306
-Username: root (or your created user)
-Password: (your password)
-Click Connect
+3. Configure Database Connection:
+   - Click on the Database icon in the activity bar
+   - Click the "+" button to add a new connection
+   - Select MySQL
+   - Enter your connection details:
+     - Name: Transaction Demo
+     - Host: 127.0.0.1
+     - Port: 3306
+     - Username: root (or your created user)
+     - Password: (your password)
+   - Click Connect
+
+### Running the SQL Scripts
+
