@@ -1,4 +1,4 @@
--- Active: 1745157292002@@127.0.0.1@3306
+
 USE transaction_demo;
 
 -- 1. Test money transfer procedure

@@ -1,9 +1,4 @@
--- =============================================
--- CODE FOR CONNECTION 2
--- =============================================
--- Run this in the second database connection window while connection 1 is still in transaction:
 
--- Set the same isolation level as connection 1
 SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED;
 
 -- Start transaction

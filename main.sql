@@ -1,4 +1,4 @@
--- Active: 1745157292002@@127.0.0.1@3306
+
 DROP DATABASE IF EXISTS transaction_demo;
 CREATE DATABASE transaction_demo;
 USE transaction_demo;
