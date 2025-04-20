@@ -11,7 +11,6 @@ CREATE TABLE accounts (
     CONSTRAINT check_positive_balance CHECK (balance >= 0)
 );
 
--- Products inventory (for demonstrating isolation)
 CREATE TABLE products (
     product_id INT PRIMARY KEY AUTO_INCREMENT,
     product_name VARCHAR(100) NOT NULL,
@@ -20,14 +19,12 @@ CREATE TABLE products (
     CONSTRAINT check_positive_stock CHECK (stock_quantity >= 0)
 );
 
--- Customers table
 CREATE TABLE customers (
     customer_id INT PRIMARY KEY AUTO_INCREMENT,
     customer_name VARCHAR(100) NOT NULL,
     email VARCHAR(100) UNIQUE
 );
 
--- Orders table (for demonstrating durability)
 CREATE TABLE orders (
     order_id INT PRIMARY KEY AUTO_INCREMENT,
     customer_id INT NOT NULL,
@@ -37,7 +34,6 @@ CREATE TABLE orders (
     FOREIGN KEY (customer_id) REFERENCES customers(customer_id)
 );
 
--- Order items (for demonstrating atomicity in complex transactions)
 CREATE TABLE order_items (
     order_item_id INT PRIMARY KEY AUTO_INCREMENT,
     order_id INT NOT NULL,
@@ -48,7 +44,6 @@ CREATE TABLE order_items (
     FOREIGN KEY (product_id) REFERENCES products(product_id)
 );
 
--- Transaction log (for demonstrating recoverability)
 CREATE TABLE transaction_log (
     log_id INT PRIMARY KEY AUTO_INCREMENT,
     transaction_type VARCHAR(50) NOT NULL,
@@ -59,7 +54,6 @@ CREATE TABLE transaction_log (
     user_id VARCHAR(50)
 );
 
--- Populate with initial data
 INSERT INTO accounts (account_id, account_name, balance) VALUES
 ('A1001', 'Alice Smith', 1000.00),
 ('A1002', 'Bob Johnson', 1500.00),
@@ -79,9 +73,6 @@ INSERT INTO customers (customer_name, email) VALUES
 ('Mike Wilson', 'mike@example.com'),
 ('Sarah Brown', 'sarah@example.com');
 
--- Create stored procedures to demonstrate transactions
-
--- Procedure for money transfer (atomicity)
 DELIMITER //
 CREATE PROCEDURE transfer_money(
     IN from_account VARCHAR(10),
@@ -119,7 +110,6 @@ BEGIN
 END //
 DELIMITER ;
 
--- Procedure for creating order (demonstrates complex transaction)
 DELIMITER //
 CREATE PROCEDURE create_order(
     IN p_customer_id INT,
@@ -151,7 +141,6 @@ BEGIN
 END //
 DELIMITER ;
 
--- Procedure to add item to order (atomicity + isolation)
 DELIMITER //
 CREATE PROCEDURE add_item_to_order(
     IN p_order_id INT,
