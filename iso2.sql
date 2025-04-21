@@ -1,7 +1,6 @@
 
 SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED;
 
--- Start transaction
 START TRANSACTION;
 
 -- Check product data (depending on isolation level, may or may not see connection 1's updates)
